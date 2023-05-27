@@ -1,69 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Security camera Stijn</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Security camera Stijn</title>
-</head>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="./app.js"></script>
 
-<link rel="stylesheet" href="styles.css" />
-<script src="./app.js"></script>  
+  <body>
+    <div class="container">
+      <div class="achtergrond">
+        <image
+          class="foto"
+          src="./Media/LaptopAchtergrond.jpg"
+        ></image>
+      </div>
 
-<body>
-  <div class="container">
-    <div class="achtergrond">
-      <image class="foto
-      " src="./Media/LaptopAchtergrond.jpg"></image>
+      <video id="video" autoplay></video>
 
-    </div>
+      <audio id="audio" src="/Media/Sint-Jozefstraat.mp3"></audio>
 
-    <video id="video" autoplay></video>
+      <script src="https://cdn.jsdelivr.net/npm/ml5@latest"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/serialport/10.4.0/serialport.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/addons/p5.dom.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/ml5@latest/dist/ml5.min.js"></script>
+      <script type="text/javascript">
+        // Classifier Variable
+        let classifier;
+        // Model URL
+        let imageModelURL =
+          'https://teachablemachine.withgoogle.com/models/3zgC3ksGN/';
 
-    <script src="https://cdn.jsdelivr.net/npm/ml5@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/serialport/10.4.0/serialport.min.js"></script>
-    <script>
-      const video = document.getElementById('video');
-      let label = '';
+        // Video
+        let video;
+        let flippedVideo;
+        // To store the classification
+        let label = '';
 
-      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-        video.srcObject = stream;
-        video.play();
+        // Load the model first
+        function preload() {
+          classifier = ml5.imageClassifier(
+            imageModelURL + 'model.json',
+          );
+        }
 
-        ml5.imageClassifier('https://teachablemachine.withgoogle.com/models/MEU7tunuK/model.json', (classifier, err) => {
-          if (err) {
-            console.error('Error loading the model:', err);
+        function setup() {
+          createCanvas(320, 260);
+          // Create the video
+          video = createCapture(VIDEO);
+          video.size(320, 240);
+          video.hide();
+
+          flippedVideo = ml5.flipImage(video);
+          // Start classifying
+          classifyVideo();
+        }
+
+        function draw() {
+          background(0);
+          // Draw the video
+          image(flippedVideo, 0, 0);
+
+          // Draw the label
+          fill(255);
+          textSize(16);
+          textAlign(CENTER);
+          text(label, width / 2, height - 4);
+
+          // Check if the label is 'vijand' and play the sound
+          if (label === 'vijand') {
+            playSound();
+          }
+        }
+
+        // Get a prediction for the current video frame
+        function classifyVideo() {
+          flippedVideo = ml5.flipImage(video);
+          classifier.classify(flippedVideo, gotResult);
+          flippedVideo.remove();
+        }
+
+        // When we get a result
+        function gotResult(error, results) {
+          // If there is an error
+          if (error) {
+            console.error(error);
             return;
           }
+          // The results are in an array ordered by confidence.
+          // console.log(results[0]);
+          label = results[0].label;
+          // Classify again!
+          classifyVideo();
+        }
 
-          setInterval(() => {
-            classifier.classify(video, (error, results) => {
-              if (error) {
-                console.error('Error:', error);
-                return;
-              }
-
-              label = results[0].label;
-              console.log('Label:', label);
-              // Send the label to the server
-              fetch('/label', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ label })
-              }).catch((err) => {
-                console.error('Error sending label:', err);
-              });
-            });
-          }, 1000);
-        });
-      }).catch((err) => {
-        console.error('Error:', err);
-      });
-    </script>
-  </div>
-</body>
-
+        // Play the sound
+        function playSound() {
+          const audio = document.getElementById('audio');
+          audio.play();
+          console.log('sound');
+        }
+      </script>
+    </div>
+  </body>
 </html>
