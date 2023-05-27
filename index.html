@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security camera Stijn</title>
+</head>
+
+<link rel="stylesheet" href="styles.css" />
+<script src="./app.js"></script>  
+
+<body>
+  <div class="container">
+    <div class="achtergrond">
+      <image class="foto
+      " src="./Media/LaptopAchtergrond.jpg"></image>
+
+    </div>
+
+    <video id="video" autoplay></video>
+
+    <script src="https://cdn.jsdelivr.net/npm/ml5@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/serialport/10.4.0/serialport.min.js"></script>
+    <script>
+      const video = document.getElementById('video');
+      let label = '';
+
+      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+        video.srcObject = stream;
+        video.play();
+
+        ml5.imageClassifier('https://teachablemachine.withgoogle.com/models/MEU7tunuK/model.json', (classifier, err) => {
+          if (err) {
+            console.error('Error loading the model:', err);
+            return;
+          }
+
+          setInterval(() => {
+            classifier.classify(video, (error, results) => {
+              if (error) {
+                console.error('Error:', error);
+                return;
+              }
+
+              label = results[0].label;
+              console.log('Label:', label);
+              // Send the label to the server
+              fetch('/label', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ label })
+              }).catch((err) => {
+                console.error('Error sending label:', err);
+              });
+            });
+          }, 1000);
+        });
+      }).catch((err) => {
+        console.error('Error:', err);
+      });
+    </script>
+  </div>
+</body>
+
+</html>

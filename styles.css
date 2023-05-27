@@ -1,0 +1,49 @@
+body {
+	background-color: beige;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.h1 {
+	color: rgb(255, 0, 0);
+	font-size: 50px;
+	font-family: 'Roboto', sans-serif;
+	margin-top: 50px;
+	position: absolute;
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
+}
+
+#defaultCanvas0 {
+    position: absolute;
+    margin-top: 210px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#video{
+	position:absolute; 
+	height: 20%;
+    width: 15%;
+	top: 175px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.achtergrond{
+	width: 100%;
+	height: 100%;
+
+
+}
